@@ -190,6 +190,10 @@
     <li><input type="checkbox" data-id="b-products" aria-label="valider"><div>
       <div class="t">Déclarer ses produits</div>
       <div class="d">Ajoute un produit : nom, photos, poids, valeur, catégorie, état, raison d'envoi. Essaie de <em>dépasser les limites</em> (plus de 32 kg, plus de 10 000 €) : refus avec un message clair. Pour l'alcool, le tabac ou les médicaments, une quantité doit être demandée.</div></div></li>
+    <li><input type="checkbox" data-id="b-valuecap" aria-label="valider"><div>
+      <span class="chip retest">Corrigé — à re-tester</span>
+      <div class="t">Dépasser le plafond de la destination : bloqué tout de suite</div>
+      <div class="d">Sur un trajet plafonné (ex. France → Guadeloupe, 1 000 €), déclare des produits dont la <em>valeur totale dépasse le plafond</em> : un <em>message rouge</em> doit apparaître immédiatement à l'étape produits et t'empêcher de continuer tant que tu n'as pas baissé la valeur — plus besoin d'attendre l'envoi de la demande pour le découvrir.</div></div></li>
     <li><input type="checkbox" data-id="b-bagpref" aria-label="valider"><div>
       <span class="chip retest">Corrigé — à re-tester</span>
       <div class="t">Choisir cabine ou soute pour chaque produit</div>
@@ -245,9 +249,9 @@
       <div class="t">Publier l'offre</div>
       <div class="d">Vérifie le récapitulatif, coche les engagements, publie. L'offre doit apparaître dans « Mes offres » et être visible côté expéditeurs.</div></div></li>
     <li><input type="checkbox" data-id="d-customs" aria-label="valider"><div>
-      <span class="chip known">Problème connu</span>
-      <div class="t">Destination non desservie : refus seulement à la fin</div>
-      <div class="d">Côté voyageur, si tu choisis une destination non desservie, le refus n'arrive <em>qu'au moment de publier</em> — pas dès le choix du pays comme côté expéditeur. C'est connu et prévu d'être corrigé : confirme juste que tu le constates.</div></div></li>
+      <span class="chip retest">Corrigé — à re-tester</span>
+      <div class="t">Destination non desservie : bloqué dès le choix du pays</div>
+      <div class="d">Comme côté expéditeur maintenant : dans l'étape vol, les pays d'arrivée non desservis doivent apparaître <em>grisés « non disponible »</em>, et si un trajet impossible est sélectionné, un <em>message rouge</em> s'affiche tout de suite et empêche de passer à la suite.</div></div></li>
     <li><input type="checkbox" data-id="d-delivery" aria-label="valider"><div>
       <div class="t">Livrer : les 3 étapes + le QR code</div>
       <div class="d">Marque le colis <em>récupéré</em>, puis <em>en transit</em>, puis <em>livré</em>. Teste le <em>scan du QR code</em> à la remise : il doit afficher les bons colis.</div></div></li>
