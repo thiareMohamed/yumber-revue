@@ -1,0 +1,753 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yumber — Revue des cas d'usage &amp; tests</title>
+<style>
+  :root {
+    --bg: #FCFBF9;
+    --surface: #F4F2ED;
+    --surface-2: #EDEAE3;
+    --ink: #23201B;
+    --muted: #6E675D;
+    --line: #E3DFD6;
+    --accent: #D96A08;
+    --accent-soft: #FBEAD8;
+    --ok: #17804A;
+    --ok-soft: #E2F2E9;
+    --fail: #C03A2B;
+    --fail-soft: #F9E5E2;
+    --warn: #9A6400;
+    --warn-soft: #F7EDD6;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --sans: "Avenir Next", "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17140F;
+      --surface: #201C16;
+      --surface-2: #2A251D;
+      --ink: #EDE8DF;
+      --muted: #A79D8E;
+      --line: #373129;
+      --accent: #F09540;
+      --accent-soft: #3A2A18;
+      --ok: #56C48D;
+      --ok-soft: #1D3226;
+      --fail: #EF7F6E;
+      --fail-soft: #3C221E;
+      --warn: #E0AC4E;
+      --warn-soft: #372C17;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17140F;
+    --surface: #201C16;
+    --surface-2: #2A251D;
+    --ink: #EDE8DF;
+    --muted: #A79D8E;
+    --line: #373129;
+    --accent: #F09540;
+    --accent-soft: #3A2A18;
+    --ok: #56C48D;
+    --ok-soft: #1D3226;
+    --fail: #EF7F6E;
+    --fail-soft: #3C221E;
+    --warn: #E0AC4E;
+    --warn-soft: #372C17;
+  }
+  :root[data-theme="light"] {
+    --bg: #FCFBF9;
+    --surface: #F4F2ED;
+    --surface-2: #EDEAE3;
+    --ink: #23201B;
+    --muted: #6E675D;
+    --line: #E3DFD6;
+    --accent: #D96A08;
+    --accent-soft: #FBEAD8;
+    --ok: #17804A;
+    --ok-soft: #E2F2E9;
+    --fail: #C03A2B;
+    --fail-soft: #F9E5E2;
+    --warn: #9A6400;
+    --warn-soft: #F7EDD6;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.55 var(--sans);
+  }
+  .wrap { max-width: 1020px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  .eyebrow {
+    font: 600 11px/1 var(--sans);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+  h1 {
+    font-size: 27px;
+    line-height: 1.2;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  .meta {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 0 0 26px;
+  }
+  .meta code { font-family: var(--mono); font-size: 12px; }
+
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 10px;
+    margin-bottom: 36px;
+  }
+  .tile {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .tile .k {
+    font: 600 11px/1 var(--sans);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .tile .v {
+    font-size: 22px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  .tile .v small { font-size: 13px; font-weight: 500; color: var(--muted); }
+  .tile .sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .tile.progress .v { color: var(--accent); }
+  .bar {
+    height: 5px;
+    background: var(--surface-2);
+    border-radius: 999px;
+    margin-top: 10px;
+    overflow: hidden;
+  }
+  .bar i {
+    display: block;
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    border-radius: 999px;
+    transition: width .25s ease;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 40px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  h2 {
+    font-size: 19px;
+    margin: 46px 0 4px;
+    letter-spacing: -0.01em;
+  }
+  .sec-note { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+  table { border-collapse: collapse; width: 100%; min-width: 780px; }
+  th {
+    text-align: left;
+    font: 600 11px/1.3 var(--sans);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--surface);
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+    font-size: 13.5px;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:has(input:checked) td { background: color-mix(in srgb, var(--ok-soft) 45%, transparent); }
+  td.check { width: 34px; text-align: center; padding-top: 12px; }
+  td .uc { font-weight: 600; display: block; }
+  td .rules { color: var(--muted); font-size: 12.5px; display: block; margin-top: 2px; }
+  td.tests { color: var(--muted); font-size: 12.5px; max-width: 240px; }
+  td.tests code, .rules code, li code {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    background: var(--surface-2);
+    padding: 1px 5px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  input[type="checkbox"] {
+    width: 16px; height: 16px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+  input[type="checkbox"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .chip {
+    display: inline-block;
+    font: 600 11px/1 var(--sans);
+    padding: 4px 9px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .chip.ok    { color: var(--ok);   background: var(--ok-soft);   border-color: color-mix(in srgb, var(--ok) 30%, transparent); }
+  .chip.fixed { color: var(--accent); background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+  .chip.fail  { color: var(--fail); background: var(--fail-soft); border-color: color-mix(in srgb, var(--fail) 30%, transparent); }
+  .chip.warn  { color: var(--warn); background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 35%, transparent); }
+  .chip.gap   { color: var(--muted); background: transparent; border: 1px dashed var(--line); }
+
+  .openlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .openlist li {
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    gap: 10px;
+    align-items: start;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .openlist li:has(input:checked) { border-color: color-mix(in srgb, var(--ok) 40%, transparent); background: color-mix(in srgb, var(--ok-soft) 40%, var(--surface)); }
+  .openlist .t { font-weight: 600; font-size: 14px; }
+  .openlist .d { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+  .failbox { border-left: 3px solid var(--fail); background: var(--surface); border-radius: 0 10px 10px 0; padding: 12px 16px; margin: 10px 0; }
+  .failbox .f { font-weight: 600; font-size: 13.5px; }
+  .failbox .f code { font-family: var(--mono); font-size: 12px; }
+  .failbox .why { color: var(--muted); font-size: 12.5px; }
+
+  footer { margin-top: 56px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); padding-top: 16px; }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin: -24px 0 36px;
+  }
+  .toolbar label { font-size: 13px; color: var(--muted); }
+  .toolbar input[type="text"] {
+    flex: 1 1 220px;
+    max-width: 320px;
+    font: 14px var(--sans);
+    color: var(--ink);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 10px;
+  }
+  .toolbar input[type="text"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .toolbar button {
+    font: 600 13px var(--sans);
+    color: #fff;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    padding: 9px 14px;
+    cursor: pointer;
+  }
+  .toolbar button:hover { filter: brightness(1.06); }
+  .toolbar button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .toolbar .hint { flex-basis: 100%; font-size: 12px; color: var(--muted); }
+  #copied { color: var(--ok); font-weight: 600; font-size: 13px; }
+
+  .notebtn {
+    display: inline-block;
+    margin-top: 4px;
+    font: 600 11.5px var(--sans);
+    color: var(--accent);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+  .notebtn:hover { text-decoration: underline; }
+  .notebtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .notefield {
+    display: block;
+    width: 100%;
+    margin-top: 6px;
+    font: 12.5px/1.45 var(--sans);
+    color: var(--ink);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 7px 9px;
+    resize: vertical;
+    min-height: 34px;
+  }
+  .notefield:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  #exportout {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+    font: 12px/1.5 var(--mono);
+    color: var(--ink);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px;
+    min-height: 140px;
+  }
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">Yumber · Revue de plateforme</p>
+  <h1>Cas d'usage &amp; état des tests — revue de validation</h1>
+  <p class="meta">Généré le 06/07/2026 · branche <code>develop</code> @ <code>762ffa7</code> · 20 contrôleurs API, ~120 endpoints · Cochez chaque ligne vérifiée : la progression est enregistrée dans ce navigateur.</p>
+
+  <div class="tiles">
+    <div class="tile">
+      <div class="k">Tests frontend (Vitest)</div>
+      <div class="v">487<small> / 521 ✓</small></div>
+      <div class="sub">57 fichiers · 23 échecs préexistants · 11 ignorés</div>
+    </div>
+    <div class="tile">
+      <div class="k">Tests backend (Jest)</div>
+      <div class="v">129<small> / 129 ✓</small></div>
+      <div class="sub">10 suites · ⚠ désactivés dans le CI</div>
+    </div>
+    <div class="tile">
+      <div class="k">Échecs — tous préexistants</div>
+      <div class="v">23</div>
+      <div class="sub">3 fichiers · vérifié sur le commit antérieur <code style="font-family:var(--mono)">def3c55</code></div>
+    </div>
+    <div class="tile progress">
+      <div class="k">Votre revue</div>
+      <div class="v"><span id="done">0</span><small> / <span id="total">0</span> validés</small></div>
+      <div class="bar"><i id="barfill"></i></div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <label for="reviewer">Relecteur :</label>
+    <input type="text" id="reviewer" placeholder="Votre nom (ex. Jimmy)" autocomplete="name">
+    <button type="button" id="export">Copier le compte-rendu</button>
+    <span id="copied" hidden>Copié ✓ — collez-le dans WhatsApp</span>
+    <span class="hint">Cochez les lignes vérifiées et ajoutez une note (💬) là où vous voyez un problème. Vos coches restent dans <em>votre</em> navigateur : en fin de revue, cliquez « Copier le compte-rendu » et envoyez le texte.</span>
+    <textarea id="exportout" hidden readonly aria-label="Compte-rendu généré"></textarea>
+  </div>
+
+  <div class="legend">
+    <strong style="color:var(--ink)">Légende :</strong>
+    <span class="chip ok">OK</span> couvert, rien à signaler
+    <span class="chip fixed">Corrigé 06/07</span> corrigé cette session
+    <span class="chip fail">Échec préexistant</span> test cassé avant la session
+    <span class="chip warn">À trancher / Partiel</span> décision produit ou couverture incomplète
+    <span class="chip gap">Sans test</span> fonctionne mais aucun test dédié
+  </div>
+
+  <!-- ============ 1. VISITEUR & AUTH ============ -->
+  <h2>1 · Visiteur &amp; authentification</h2>
+  <p class="sec-note">Connexion sans mot de passe (lien magique + code OTP), suivi public, PWA.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>✓</th><th>Cas d'usage</th><th>Tests</th><th>Statut</th></tr></thead>
+    <tbody>
+      <tr><td class="check"><input type="checkbox" data-id="auth-magic"></td>
+        <td><span class="uc">Connexion lien magique + code OTP</span><span class="rules">Email → OTP · access 15 min / refresh 7 j · cookies httpOnly en prod · throttling renforcé sur <code>/auth</code></span></td>
+        <td class="tests"><code>auth-modal</code> <code>auth-screen-email</code> <code>auth-screen-verify</code> <code>auth-service</code></td>
+        <td><span class="chip ok">OK</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="auth-register"></td>
+        <td><span class="uc">Inscription &amp; complétion du profil (1ʳᵉ connexion)</span><span class="rules"><code>POST /auth/register</code> · écrans profil puis KYC</span></td>
+        <td class="tests"><code>auth-screen-profile</code> <code>auth-screen-kyc</code></td>
+        <td><span class="chip ok">OK</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="auth-refresh"></td>
+        <td><span class="uc">Rafraîchissement de session / déconnexion</span><span class="rules">Refresh auto sur 401 · invalidation par version du cache utilisateur</span></td>
+        <td class="tests"><code>auth-service</code></td>
+        <td><span class="chip ok">OK</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="public-tracking"></td>
+        <td><span class="uc">Suivi public par QR code</span><span class="rules"><code>GET /requests/public/:publicTrackingId</code> · page <code>/track/:id</code> · nécessite le fallback SPA côté serveur</span></td>
+        <td class="tests"><code>public-tracking-page</code></td>
+        <td><span class="chip ok">OK</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="pwa"></td>
+        <td><span class="uc">Installation PWA</span><span class="rules">Drawer d'installation, détection plateforme</span></td>
+        <td class="tests"><code>install-utils</code> <code>pwa-install-drawer</code></td>
+        <td><span class="chip ok">OK</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="public-wizards"></td>
+        <td><span class="uc">Création de demande / d'offre en mode public</span><span class="rules">Wizard accessible avant connexion · authentification demandée à la soumission · reprise auto après login (sessionStorage)</span></td>
+        <td class="tests">couvert via les tests des wizards</td>
+        <td><span class="chip ok">OK</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <!-- ============ 2. CLIENT — CRÉER UNE DEMANDE ============ -->
+  <h2>2 · Client — créer une demande (wizard 4 étapes)</h2>
+  <p class="sec-note">Itinéraire → produits → modes de remise &amp; rémunération → récapitulatif. Brouillon auto en localStorage, édition/visualisation d'une demande existante.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>✓</th><th>Cas d'usage</th><th>Tests</th><th>Statut</th></tr></thead>
+    <tbody>
+      <tr><td class="check"><input type="checkbox" data-id="req-geo"></td>
+        <td><span class="uc">Étape 1 — itinéraire en cascade</span><span class="rules">Pays → région → ville → aéroport · géographie en base (éditable admin, seed CSV) · bouton d'inversion ⇄</span></td>
+        <td class="tests"><code>endpoint-location-cascade</code> (19) <code>location-geo-cascade</code> <code>country-options</code></td>
+        <td><span class="chip ok">OK</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="req-customs"></td>
+        <td><span class="uc">Étape 1 — contrôle douanier de la route</span><span class="rules">Pays sans seuil grisés dans les listes · alerte « Destination non disponible » · Suivant bloqué · plafond de valeur affiché si route OK (ex. Guadeloupe 1 000 €, Cameroun bloqué)</span></td>
+        <td class="tests">2 tests ajoutés dans <code>create-request-wizard</code></td>
+        <td><span class="chip fixed">Corrigé 06/07</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="req-dates"></td>
+        <td><span class="uc">Étape 1 — dates &amp; type de demande</span><span class="rules">Standard ≥ 7 j avant le vol · Urgence 24 h = fenêtre glissante saisie → décollage, butoir affiché (« avant le 03/07 à 11h00 ») · arrivée le même jour acceptée (décalage horaire)</span></td>
+        <td class="tests"><code>request-lead-time</code> <code>create-request-wizard</code> (31)</td>
+        <td><span class="chip fixed">Corrigé 06/07</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="req-gap"></td>
+        <td><span class="uc">Zone 24 h – 7 j : aucune demande possible</span><span class="rules">Statut <code>blocked</code> volontaire entre l'urgence et le standard — à confirmer comme choix produit, ou à combler</span></td>
+        <td class="tests">couvert (comportement testé)</td>
+        <td><span class="chip warn">À trancher</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="req-products"></td>
+        <td><span class="uc">Étape 2 — produits</span><span class="rules">Poids ≤ 32 kg · valeur 1 – 10 000 € · quantités réglementées (alcool, tabac, médicaments) · photos · gabarits S/M/L/XL ou dimensions · disclaimer objets interdits obligatoire</span></td>
+        <td class="tests"><code>create-request-wizard</code> + backend <code>requests.service.spec</code></td>
+        <td><span class="chip ok">OK</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="req-bagpref"></td>
+        <td><span class="uc">Étape 2 — affectation cabine / soute / peu importe</span><span class="rules">Nouveau champ <code>baggagePreference</code> par produit (défaut « peu importe ») · migration <code>1765300000000</code> · pas encore affiché au convoyeur ni utilisé à l'affectation</span></td>
+        <td class="tests">sans test dédié</td>
+        <td><span class="chip fixed">Corrigé 06/07</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="req-customs-value"></td>
+        <td><span class="uc">Étape 2 — plafond douanier sur la valeur totale</span><span class="rules">Le dépassement n'est bloqué qu'à la soumission (backend) · pas d'alerte UI pendant la saisie des produits</span></td>
+        <td class="tests">backend <code>requests.service.spec</code></td>
+        <td><span class="chip warn">Reste à faire (UI)</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="req-submit"></td>
+        <td><span class="uc">Étapes 3–4 — remise, rémunération, récap, soumission</span><span class="rules">Modes de remise (main propre, postal, achat en ligne, aéroport) · rémunération argent / brunch / pickup · budget max · brouillon auto · auth différée</span></td>
+        <td class="tests"><code>request-summary-step</code> <code>client-wizard</code> (9)</td>
+        <td><span class="chip ok">OK</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <!-- ============ 3. CLIENT — RÉSERVER & SUIVRE ============ -->
+  <h2>3 · Client — réserver une offre &amp; suivre</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>✓</th><th>Cas d'usage</th><th>Tests</th><th>Statut</th></tr></thead>
+    <tbody>
+      <tr><td class="check"><input type="checkbox" data-id="cli-browse"></td>
+        <td><span class="uc">Parcourir les offres actives / urgentes</span><span class="rules"><code>GET /offers/active</code>, <code>/offers/urgent</code> · fiche offre, favoris, comparaison</span></td>
+        <td class="tests"><code>offers-list</code> <code>offers-service</code></td>
+        <td><span class="chip ok">OK</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="cli-book"></td>
+        <td><span class="uc">Réserver depuis une offre (produits → bagages)</span><span class="rules"><code>POST /requests/from-offer/:offerId</code> · validation capacité bagage/slot · valeur vs plafond douanier</span></td>
+        <td class="tests">backend <code>requests.service.spec</code> · pas de test UI checkout</td>
+        <td><span class="chip warn">Partiel</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="cli-counter"></td>
+        <td><span class="uc">Contre-offres &amp; acceptation</span><span class="rules">Contre-offre client · contre-offre convoyeur (accepter / refuser) · réservation non monétaire · <code>accept-booking</code> / <code>reject-booking</code></span></td>
+        <td class="tests"><code>my-requests-page</code> + backend spec</td>
+        <td><span class="chip ok">OK</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="cli-pay"></td>
+        <td><span class="uc">Paiement &amp; remboursement</span><span class="rules"><code>/payments</code> · complete / fail / refund · stats revenus</span></td>
+        <td class="tests"><code>payments.service.spec</code> <code>payments-page</code></td>
+        <td><span class="chip ok">OK</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="cli-track"></td>
+        <td><span class="uc">Suivi de livraison + confirmation de réception</span><span class="rules"><code>GET :id/tracking</code> · timeline · <code>confirm-delivery</code> côté client</span></td>
+        <td class="tests"><code>client-request-details-page</code> <code>client-requests-page</code></td>
+        <td><span class="chip ok">OK</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="cli-msg"></td>
+        <td><span class="uc">Messagerie par demande</span><span class="rules">Conversation client ↔ convoyeur · compteur non-lus · marquage lu</span></td>
+        <td class="tests"><code>conversation-panel</code> <code>messages-page</code></td>
+        <td><span class="chip ok">OK</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="cli-dispute"></td>
+        <td><span class="uc">Litiges (création, retrait)</span><span class="rules"><code>POST /disputes</code> · <code>my-disputes</code> · <code>withdraw</code></span></td>
+        <td class="tests">backend <code>disputes.service.spec</code> · pas de test UI côté client</td>
+        <td><span class="chip warn">Partiel</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <!-- ============ 4. CONVOYEUR ============ -->
+  <h2>4 · Convoyeur — créer une offre &amp; livrer</h2>
+  <p class="sec-note">Wizard 4 étapes : vol → bagages → lieux → récapitulatif. Statuts d'offre : draft / active / booked / completed / cancelled.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>✓</th><th>Cas d'usage</th><th>Tests</th><th>Statut</th></tr></thead>
+    <tbody>
+      <tr><td class="check"><input type="checkbox" data-id="conv-flight"></td>
+        <td><span class="uc">Étape vol + preuve de vol</span><span class="rules">N° de vol, compagnies, dates/heures · upload preuve (statuts pending / validated / rejected par l'admin) · réutilisation d'une preuve (<code>my-reusable-flight-proofs</code>, <code>copy-flight-proof</code>)</span></td>
+        <td class="tests"><code>flight-step</code> 13 tests dont <strong>2 ✗</strong> (validation du n° de vol) · <code>flight-proof</code> ✓ <code>offer-flight-proof-card</code> ✓</td>
+        <td><span class="chip fail">Échec préexistant</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="conv-nav"></td>
+        <td><span class="uc">Navigation du wizard (4 étapes)</span><span class="rules">Les tests ne passent plus l'étape vol — même cause racine probable que les 2 échecs ci-dessus · l'app fonctionne, ce sont les tests qui sont cassés</span></td>
+        <td class="tests"><code>create-offer-wizard</code> 64 tests dont <strong>20 ✗</strong></td>
+        <td><span class="chip fail">Échec préexistant</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="conv-baggage"></td>
+        <td><span class="uc">Étape bagages</span><span class="rules">Max 1 bagage cabine · photos intérieure + extérieure obligatoires · dimensions, poids, prix conseillé · sécurisation (cadenas, TSA…) · champ « Préférence d'affectation » retiré (décision Jimmy)</span></td>
+        <td class="tests"><code>baggage-step</code> <code>baggage-mapper</code> <code>baggages-service</code></td>
+        <td><span class="chip fixed">Corrigé 06/07</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="conv-location"></td>
+        <td><span class="uc">Étape lieux (remise / récupération)</span><span class="rules">Modes domicile / domicile client / aéroport / autre · dates limites de dépôt</span></td>
+        <td class="tests"><code>location-step</code></td>
+        <td><span class="chip ok">OK</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="conv-publish"></td>
+        <td><span class="uc">Récapitulatif + publication</span><span class="rules">Consentements (âge, règles, objets interdits) · <code>publish</code> · reprise après authentification</span></td>
+        <td class="tests"><code>summary-step</code> <code>offer-mapper</code></td>
+        <td><span class="chip ok">OK</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="conv-customs"></td>
+        <td><span class="uc">Contrôle douanier à la création d'offre</span><span class="rules">Vérifié uniquement au backend à la soumission — pas de blocage précoce dans l'UI, contrairement au wizard client</span></td>
+        <td class="tests">backend <code>offers.service.spec</code></td>
+        <td><span class="chip warn">Reste à faire (UI)</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="conv-lifecycle"></td>
+        <td><span class="uc">Cycle de livraison</span><span class="rules"><code>confirm-pickup</code> → <code>mark-in-transit</code> → <code>mark-delivered</code> · scan QR (<code>conveyor-scan</code>) · annulation convoyeur avec motif</span></td>
+        <td class="tests">backend spec · <code>shipments-page</code> sans test UI</td>
+        <td><span class="chip warn">Partiel</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="conv-manage"></td>
+        <td><span class="uc">Mes offres, édition, aperçu, revenus</span><span class="rules"><code>my-offers</code> (+ variantes avec expéditions) · édition contrôlée (<code>editable</code>) · revenus (<code>payments/received</code>, stats)</span></td>
+        <td class="tests"><code>my-offers-page</code> <code>offer-preview-page</code> <code>create-offer-dashboard-page</code> <code>request-details-page</code></td>
+        <td><span class="chip ok">OK</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <!-- ============ 5. ADMIN ============ -->
+  <h2>5 · Admin &amp; Superadmin</h2>
+  <p class="sec-note">Rôles USER / ADMIN / SUPERADMIN · admins promus via <code>ADMIN_EMAILS</code> · superadmin initial via env au démarrage.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>✓</th><th>Cas d'usage</th><th>Tests</th><th>Statut</th></tr></thead>
+    <tbody>
+      <tr><td class="check"><input type="checkbox" data-id="adm-dash"></td>
+        <td><span class="uc">Dashboard admin (KPIs)</span></td>
+        <td class="tests"><code>AdminDashboard</code></td>
+        <td><span class="chip ok">OK</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="adm-users"></td>
+        <td><span class="uc">Gestion utilisateurs + rôles</span><span class="rules">Liste, détail, changement de rôle (fonctionnalité récente <code>d0356f7</code>)</span></td>
+        <td class="tests"><code>AdminUsersPage</code> <strong>1 ✗</strong> — le test rend le composant hors AuthProvider</td>
+        <td><span class="chip fail">Échec préexistant</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="adm-kyc"></td>
+        <td><span class="uc">Validation KYC</span><span class="rules">File d'attente + détail · validation / rejet des documents (identité, adresse, pièce convoyeur)</span></td>
+        <td class="tests"><code>KycDashboard</code> <code>KycDetailPage</code></td>
+        <td><span class="chip ok">OK</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="adm-proofs"></td>
+        <td><span class="uc">Validation des preuves de vol</span><span class="rules">Valider / rejeter avec motif · validité, aller-retour</span></td>
+        <td class="tests"><code>AdminOffersPage</code> ✓ · <code>AdminFlightProofsPage</code> sans test</td>
+        <td><span class="chip warn">Partiel</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="adm-reqdis"></td>
+        <td><span class="uc">Demandes &amp; litiges (résolution)</span><span class="rules"><code>disputes/admin</code> : liste, stats, arbitrage</span></td>
+        <td class="tests"><code>AdminRequestsPage</code> <code>AdminDisputesPage</code></td>
+        <td><span class="chip ok">OK</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="adm-customs"></td>
+        <td><span class="uc">Seuils douaniers (superadmin)</span><span class="rules">CRUD <code>/admin/customs-thresholds</code> · cache + rechargement à chaud · seed CSV idempotent</span></td>
+        <td class="tests">pas de test UI · logique partagée testée indirectement</td>
+        <td><span class="chip gap">Sans test</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="adm-geo"></td>
+        <td><span class="uc">Géographie (superadmin)</span><span class="rules">CRUD pays / villes / aéroports <code>/admin/geography</code> · seed CSV versionné · devient sélectionnable dans les wizards</span></td>
+        <td class="tests">pas de test UI</td>
+        <td><span class="chip gap">Sans test</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <!-- ============ 6. TRANSVERSE ============ -->
+  <h2>6 · Transverse &amp; système</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>✓</th><th>Cas d'usage</th><th>Tests</th><th>Statut</th></tr></thead>
+    <tbody>
+      <tr><td class="check"><input type="checkbox" data-id="sys-matching"></td>
+        <td><span class="uc">Matching automatique demande ↔ offre</span><span class="rules">Critères : région, dates, poids · <code>GET /matching/request/:id</code> + stats</span></td>
+        <td class="tests"><code>matching.service.spec</code> <code>matching-service</code></td>
+        <td><span class="chip ok">OK</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="sys-kyc"></td>
+        <td><span class="uc">KYC utilisateur (soumission)</span><span class="rules">Identité, adresse, pièce convoyeur, preuve de vol · statut consolidé</span></td>
+        <td class="tests"><code>certification-section</code> <code>auth-screen-kyc</code></td>
+        <td><span class="chip ok">OK</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="sys-profile"></td>
+        <td><span class="uc">Profil, préférences, suppression de compte</span><span class="rules"><code>/users/me</code> · photo de profil · préférences de notification · suppression</span></td>
+        <td class="tests"><code>profile-page</code> <code>edit-profile-modal</code> <code>settings-page</code> <code>support-page</code></td>
+        <td><span class="chip ok">OK</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="sys-storage"></td>
+        <td><span class="uc">Stockage fichiers (MinIO)</span><span class="rules">Nommage sécurisé, permissions par propriétaire, images authentifiées · <code>PUBLIC_API_URL</code> pour les URLs côté navigateur</span></td>
+        <td class="tests"><code>file-naming</code> <code>file-permissions</code> <code>use-auth-image</code> <code>image-upload-utils</code></td>
+        <td><span class="chip ok">OK</span></td></tr>
+      <tr><td class="check"><input type="checkbox" data-id="sys-email"></td>
+        <td><span class="uc">Emails transactionnels</span><span class="rules">Lien magique, notifications (respect des préférences) · templates Handlebars · emails hachés dans les logs (RGPD)</span></td>
+        <td class="tests">aucun test</td>
+        <td><span class="chip gap">Sans test</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <!-- ============ TESTS EN ÉCHEC ============ -->
+  <h2>7 · Détail des 23 échecs (tous préexistants)</h2>
+  <p class="sec-note">Vérifié en rejouant la suite sur <code>def3c55</code> (dernier commit avant les changements du 06/07) : mêmes échecs, mêmes fichiers. Aucun n'est causé par les corrections récentes.</p>
+  <div class="failbox">
+    <div class="f"><code>create-offer-wizard.test.tsx</code> — 20 échecs</div>
+    <div class="why">Les tests de navigation n'arrivent plus à passer l'étape vol (le bouton « Suivant » reste bloqué dans l'environnement de test). Cause racine probablement commune avec les échecs flight-step ci-dessous.</div>
+  </div>
+  <div class="failbox">
+    <div class="f"><code>flight-step.test.tsx</code> — 2 échecs</div>
+    <div class="why">Validation du numéro de vol (<code>triggerFullValidation</code>, préfixes alphanumériques). Documentés comme préexistants depuis <code>dce7dd9</code>.</div>
+  </div>
+  <div class="failbox">
+    <div class="f"><code>AdminUsersPage.test.tsx</code> — 1 échec</div>
+    <div class="why">Le test rend la page sans <code>AuthProvider</code> → « useAuth must be used within an AuthProvider ». Défaut du test, pas du composant.</div>
+  </div>
+  <p class="sec-note" style="margin-top:14px">Backend : 10 suites Jest, 129/129 ✓ en local (<code>disputes</code>, <code>matching</code>, <code>offers</code> ×3, <code>payments</code>, <code>requests</code>, <code>storage</code> ×2, <code>users</code>) — mais <strong>désactivées dans le workflow CI</strong> (<code>da58eae</code>). Aucun test E2E sur le projet.</p>
+
+  <!-- ============ DÉCISIONS ============ -->
+  <h2>8 · Problèmes ouverts &amp; décisions — à valider</h2>
+  <p class="sec-note">La liste courte de ce qui attend soit une décision produit, soit un chantier. Cochez ce que vous validez / arbitrez.</p>
+  <ul class="openlist">
+    <li><input type="checkbox" data-id="open-gap"><div><div class="t">Zone morte 24 h – 7 j avant le vol</div><div class="d">Aucune demande possible entre l'Urgence 24 h et le Standard (≥ 7 j). Voulu (temps de matching) ou à combler (élargir une des deux fenêtres) ?</div></div><span class="chip warn">Décision produit</span></li>
+    <li><input type="checkbox" data-id="open-convcustoms"><div><div class="t">Blocage douanier précoce dans le wizard convoyeur</div><div class="d">Même traitement que côté client : destinations sans seuil grisées dès l'étape vol, au lieu d'un refus backend à la publication.</div></div><span class="chip warn">Chantier</span></li>
+    <li><input type="checkbox" data-id="open-valuelimit"><div><div class="t">Plafond douanier vérifié pendant la saisie des produits</div><div class="d">Alerter dès que la valeur totale dépasse le plafond de la route (étape 2), au lieu d'attendre la soumission.</div></div><span class="chip warn">Chantier</span></li>
+    <li><input type="checkbox" data-id="open-bagpref"><div><div class="t">Exploiter la préférence cabine/soute du client</div><div class="d">Le choix est enregistré mais ni affiché au convoyeur, ni contrôlé lors de l'affectation produit → bagage (<code>assignedBaggageId</code>).</div></div><span class="chip warn">Chantier</span></li>
+    <li><input type="checkbox" data-id="open-offertests"><div><div class="t">Réparer les 22 tests du wizard convoyeur</div><div class="d"><code>create-offer-wizard</code> (20) + <code>flight-step</code> (2) — cause racine commune probable sur la validation du n° de vol.</div></div><span class="chip fail">Tests</span></li>
+    <li><input type="checkbox" data-id="open-admintest"><div><div class="t">Réparer le test AdminUsersPage</div><div class="d">Envelopper le rendu dans un AuthProvider mocké (1 test).</div></div><span class="chip fail">Tests</span></li>
+    <li><input type="checkbox" data-id="open-ci"><div><div class="t">Réactiver les tests backend dans le CI</div><div class="d">129/129 passent en local — la désactivation « temporaire » (<code>da58eae</code>) n'a plus de raison d'être apparente.</div></div><span class="chip fail">Tests</span></li>
+    <li><input type="checkbox" data-id="open-notests"><div><div class="t">Zones sans test : checkout client, expéditions convoyeur, litiges UI, admin géo &amp; seuils, emails</div><div class="d">Fonctionnels mais non couverts — à prioriser selon le risque.</div></div><span class="chip gap">Couverture</span></li>
+    <li><input type="checkbox" data-id="open-thresholds"><div><div class="t">Seuils douaniers à confirmer côté métier</div><div class="d">Martinique / Réunion (1 000 € présumés, non confirmés) · GB, CH et la plupart des pays étrangers bloqués par défaut faute de seuil · distinction 430 € voyageur vs 45 € colis au retour non implémentée.</div></div><span class="chip warn">Décision produit</span></li>
+    <li><input type="checkbox" data-id="open-e2e"><div><div class="t">Aucun test bout-en-bout</div><div class="d">Les parcours critiques (demande → matching → paiement → livraison) ne sont couverts que par des tests unitaires isolés.</div></div><span class="chip gap">Couverture</span></li>
+  </ul>
+
+  <footer>Yumber · revue générée le 06/07/2026 depuis <code style="font-family:var(--mono)">develop @ 762ffa7</code> · tests exécutés le jour même (Vitest 57 fichiers / Jest 10 suites). Vos coches sont enregistrées localement dans ce navigateur.</footer>
+</div>
+
+<script>
+(function () {
+  var KEY = 'yumber-review-v2';
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('input[type="checkbox"][data-id]'));
+  var state = { checks: {}, notes: {}, reviewer: '' };
+  try {
+    var raw = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (raw && raw.checks) { state = raw; }
+    else {
+      // migration depuis l'ancien format (map plate de booléens, clé v1)
+      var old = JSON.parse(localStorage.getItem('yumber-review-v1') || 'null');
+      if (old) { state.checks = old; }
+    }
+  } catch (e) {}
+
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  function labelFor(box) {
+    var row = box.closest('tr') || box.closest('li');
+    var el = row && (row.querySelector('.uc') || row.querySelector('.t'));
+    return el ? el.textContent.trim() : box.dataset.id;
+  }
+
+  function sectionFor(box) {
+    var container = box.closest('.tablewrap') || box.closest('.openlist');
+    var node = container;
+    while (node && node.previousElementSibling) {
+      node = node.previousElementSibling;
+      if (node.tagName === 'H2') return node.textContent.trim();
+    }
+    return '';
+  }
+
+  // Injecte le lien « note » et le champ de commentaire sur chaque ligne
+  boxes.forEach(function (box) {
+    var id = box.dataset.id;
+    if (state.checks[id]) box.checked = true;
+
+    var row = box.closest('tr') || box.closest('li');
+    var host = row.tagName === 'TR'
+      ? row.querySelector('td:nth-child(2)')
+      : row.querySelector('div');
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'notebtn';
+    btn.textContent = '💬 Ajouter une note';
+
+    var field = document.createElement('textarea');
+    field.className = 'notefield';
+    field.rows = 2;
+    field.placeholder = 'Problème constaté, question, remarque…';
+    field.hidden = true;
+    field.setAttribute('aria-label', 'Note pour : ' + labelFor(box));
+
+    if (state.notes[id]) { field.value = state.notes[id]; field.hidden = false; btn.textContent = '💬 Note'; }
+
+    btn.addEventListener('click', function () {
+      field.hidden = !field.hidden;
+      if (!field.hidden) field.focus();
+    });
+    field.addEventListener('input', function () {
+      state.notes[id] = field.value;
+      btn.textContent = field.value.trim() ? '💬 Note' : '💬 Ajouter une note';
+      save();
+    });
+
+    host.appendChild(btn);
+    host.appendChild(field);
+
+    box.addEventListener('change', function () {
+      state.checks[id] = box.checked;
+      save();
+      update();
+    });
+  });
+
+  var reviewer = document.getElementById('reviewer');
+  reviewer.value = state.reviewer || '';
+  reviewer.addEventListener('input', function () { state.reviewer = reviewer.value; save(); });
+
+  function update() {
+    var done = boxes.filter(function (b) { return b.checked; }).length;
+    document.getElementById('done').textContent = done;
+    document.getElementById('total').textContent = boxes.length;
+    document.getElementById('barfill').style.width = (boxes.length ? (100 * done / boxes.length) : 0) + '%';
+  }
+
+  function buildReport() {
+    var done = boxes.filter(function (b) { return b.checked; }).length;
+    var lines = [];
+    lines.push('REVUE YUMBER — ' + (state.reviewer || 'relecteur non renseigné'));
+    lines.push('Le ' + new Date().toLocaleDateString('fr-FR') + ' — ' + done + '/' + boxes.length + ' lignes validées');
+    lines.push('');
+    var currentSection = null;
+    boxes.forEach(function (box) {
+      var sec = sectionFor(box);
+      var note = (state.notes[box.dataset.id] || '').trim();
+      var isProblem = !box.checked || note;
+      if (!isProblem) return; // le compte-rendu liste ce qui reste à voir + les notes
+      if (sec !== currentSection) { lines.push('— ' + sec); currentSection = sec; }
+      lines.push('  [' + (box.checked ? 'x' : ' ') + '] ' + labelFor(box));
+      if (note) {
+        note.split('\n').forEach(function (l) { lines.push('      → ' + l); });
+      }
+    });
+    if (lines.length === 3) lines.push('Tout est validé, aucune note. ✔');
+    return lines.join('\n');
+  }
+
+  var out = document.getElementById('exportout');
+  var copied = document.getElementById('copied');
+  document.getElementById('export').addEventListener('click', function () {
+    var text = buildReport();
+    out.value = text;
+    out.hidden = false;
+    function shown() {
+      copied.hidden = false;
+      setTimeout(function () { copied.hidden = true; }, 4000);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(shown, function () { out.select(); });
+    } else {
+      out.select();
+    }
+  });
+
+  update();
+})();
+</script>
+</html>
